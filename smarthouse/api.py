@@ -8,11 +8,10 @@ from smarthouse.domain import Actuator, ActuatorWithSensor, Device, Floor, Measu
 from smarthouse.persistence import SmartHouseRepository
 from pydantic import BaseModel
 from pathlib import Path
-
+import os
 def setup_database():
     project_dir = Path(__file__).parent.parent
     db_file = project_dir / "data" / "db.sql" # you have to adjust this if you have changed the file name of the database
-    print(db_file.absolute())
     return SmartHouseRepository(str(db_file.absolute()))
 
 app = FastAPI()
@@ -20,14 +19,21 @@ app = FastAPI()
 repo = setup_database()
 
 smarthouse = repo.load_smarthouse_deep()
+#testing av smarthuset http://127.0.0.1:8000/docs#/
 
-# Data Transfer Object definitions below
+if not (Path.cwd() / "www").exists():
+    os.chdir(Path.cwd().parent)
+if (Path.cwd() / "www").exists():
+    # http://localhost:8000/welcome/index.html
+    app.mount("/static", StaticFiles(directory="www"), name="static")
+
+
+# http://localhost:8000/ -> welcome page
 class SmartHouseInfo(BaseModel):
     no_rooms: int
-    no_floors: int 
+    no_floors: int
     total_area: float
-    no_devices: int 
-
+    no_devices: int
 
     @staticmethod
     def from_obj(house: SmartHouse):
@@ -46,14 +52,15 @@ class FloorInfo(BaseModel):
     def from_obj(floor: Floor):
         return FloorInfo(
             fid=floor.level,
-            rooms=[r.db_id for r in floor.rooms if r.db_id ]
+            rooms=[r.db_id for r in floor.rooms if r.db_id]
         )
+
 
 class RoomInfo(BaseModel):
     rid: int | None
     room_size: float
     room_name: str | None
-    floor: int 
+    floor: int
     devices: list[str]
 
     @staticmethod
@@ -66,6 +73,7 @@ class RoomInfo(BaseModel):
             devices=[d.id for d in room.devices]
         )
 
+
 class DeviceInfo(BaseModel):
     id: str
     model: str
@@ -74,10 +82,9 @@ class DeviceInfo(BaseModel):
     device_category: Literal["actuator"] | Literal["sensor"] | Literal["actuator_with_sensor"] | Literal["unknown"]
     room: int | None
 
-
     @staticmethod
     def from_obj(device: Device):
-        category : Literal['actuator', 'sensor', 'actuator_with_sensor', 'unknown'] = "unknown"
+        category: Literal['actuator', 'sensor', 'actuator_with_sensor', 'unknown'] = "unknown"
         if isinstance(device, ActuatorWithSensor):
             category = "actuator_with_sensor"
         elif isinstance(device, Actuator):
@@ -93,6 +100,7 @@ class DeviceInfo(BaseModel):
             room=device.room.db_id if device.room else None
         )
 
+
 class ActuatorStateInfo(BaseModel):
     state: str | float
 
@@ -104,8 +112,6 @@ class ActuatorStateInfo(BaseModel):
             return ActuatorStateInfo(state="running")
         else:
             return ActuatorStateInfo(state="off")
-
-
 
 
 # http://localhost:8000/welcome/index.html
@@ -215,7 +221,6 @@ def delete_old_measurement(uuid: str) -> Response:
         return JSONResponse(content=jsonable_encoder({'reason': 'sensor with uuid not found'}), status_code=404)
 
 
-
 @app.get("/smarthouse/actuator/{uuid}/current")
 def get_sensor_state(uuid: str) -> Response:
     device = smarthouse.get_device_by_id(uuid)
@@ -240,9 +245,9 @@ def update_sensor_state(uuid: str, target_state: ActuatorStateInfo) -> Response:
         return JSONResponse(jsonable_encoder(ActuatorStateInfo.from_obj(device)))
     else:
         return JSONResponse(content=jsonable_encoder({'reason': 'actuator with uuid not found'}), status_code=404)
-    
-
 
 
 if __name__ == '__main__':
     uvicorn.run(app, host="127.0.0.1", port=8000)
+
+
