@@ -175,7 +175,8 @@ class SmartHouse:
 
 
     def get_area(self) -> float:
-        """Met som returnerer det totale arealet av huset,
+        """
+        Metode som returnerer det totale arealet av huset,
         altså summen av areal fra hvert rom i huset.
         """
         result = 0.0 #setter en start variabel result som skal holde på det totale arealet av huset

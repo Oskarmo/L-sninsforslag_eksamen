@@ -332,7 +332,7 @@ limit 1;
             query = f"""
 UPDATE states 
 SET state = {s}
-WHERE device = '{actuator.id}'; #Unik id for aktuatoren
+WHERE device = '{actuator.id}'; 
         """
             #Oppretter en database cursor for å utføre spørringen
             c = self.cursor()
@@ -407,21 +407,21 @@ WHERE device = '{actuator.id}'; #Unik id for aktuatoren
         if isinstance(room, Room) and room.db_id is not None:
             #Definerer SQL spørring som bruker en sub-query for å beregne gj.snitt fuktigheten
             query = f"""
-SELECT  STRFTIME('%H', DATETIME(m.ts)) AS hours #Henter timen fra ts og omdøper kollone til 'hours'.
+SELECT  STRFTIME('%H', DATETIME(m.ts)) AS hours
 FROM measurements m 
 INNER JOIN devices d ON m.device = d.id 
 INNER JOIN rooms r ON r.id = d.room 
 WHERE 
-r.id = {room.db_id} #Filtrerer målingene til det spesifikke rommet
-AND m.unit = '%' #Sørger for at kun målinger med fuktighet som enehet behandles
-AND DATE(m.ts) = DATE('{date}') #Begrenser data til den spesifikke datoen
-AND m.value > ( #Filtrerer målingene til de som er over gjennomsnittet for dagen
-	SELECT AVG(value) #Beregner gj.snitt av fuktighetsmålingene for dagen
+r.id = {room.db_id} 
+AND m.unit = '%' 
+AND DATE(m.ts) = DATE('{date}')
+AND m.value > (
+	SELECT AVG(value) 
 	FROM measurements m 
 	INNER JOIN devices d on d.id = m.device
 	WHERE d.room = 4 AND DATE(ts) = DATE('{date}'))
-GROUP BY hours #Grupperer resultatet etter timer
-HAVING COUNT(m.value) > 3; #Velger kun målinger hvor det er mer enn 3 målinger over gjennomsnittet
+GROUP BY hours 
+HAVING COUNT(m.value) > 3; 
             """
             #Utfører spørringen
             cursor = self.cursor()
@@ -432,10 +432,13 @@ HAVING COUNT(m.value) > 3; #Velger kun målinger hvor det er mer enn 3 målinger
         return result
         # Returnerer listen over timer hvor fuktigheten var over gjennomsnittet mer enn tre ganger.
 
-
-    
-
-
+#steg i sql spørring 1. Henter timen fra ts og omdøper kollone til 'hours, 2.Filtrerer målingene til det spesifikke rommet
+#3.Sørger for at kun målinger med fuktighet som enehet behandles
+#4.Beregner gj.snitt av fuktighetsmålingene for dagen
+#5.Grupperer resultatet etter timer
+#6.Velger kun målinger hvor det er mer enn 3 målinger over gjennomsnittet
+#Begrenser data til den spesifikke datoen
+ #Filtrerer målingene til de som er over gjennomsnittet for dagen
 
 
 
