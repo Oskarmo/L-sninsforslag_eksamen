@@ -27,7 +27,7 @@ def lightbulb_cmd(state, did):
     actuator_state = ActuatorState(new_state)
     #Konverterer aktuatortilstanden til JSON format for å sende over HTTP
     payload = actuator_state.to_json()
-    #Setter headere for forespørselen, spesifikt innhold stypen altså JSON
+    #Setter headere for forespørselen, spesifikt innholds typen altså JSON
     headers = {'Content-Type': 'application/json'}
     #Bygger URLen for PUT forespørselen ved å hente enhetens ID fra common og legge til basen URL
     url = common.BASE_URL + f"actuator/{did}/"

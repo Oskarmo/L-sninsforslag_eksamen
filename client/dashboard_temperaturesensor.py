@@ -4,7 +4,6 @@ from tkinter import ttk
 import logging
 import requests
 
-#Importerer klassen SensorMeasurement
 from messaging import SensorMeasurement
 import common
 
@@ -32,7 +31,7 @@ def refresh_btn_cmd(temp_widget, did):
 
     #Oppdaterer tekstfeltet i brukergrensesnittet for å vise den mottate temperaturen
     temp_widget['state'] = 'normal' # setter tekstfeltet til normal for å tillate endringer
-    temp_widget.delete(1.0, 'end') #Sletter den eksiterende teksen i tekstfeltet
+    temp_widget.delete(1.0, 'end') #Sletter den eksiterende testsen i tekstfeltet
     temp_widget.insert(1.0, sensor_measurement.value) #Setter inn den nye temperaturen i tekstfeltet
     temp_widget['state'] = 'disabled' #Setter tekstfeltet tilbake til deaktivert modus for å forhindre brukerendringer
 
